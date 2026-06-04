@@ -1,0 +1,6 @@
+apiVersion: v2
+name: web-grading
+description: Helm chart for Web Programming Grading microservices
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

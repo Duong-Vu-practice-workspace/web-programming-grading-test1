@@ -1,0 +1,23 @@
+tunnel: dev1-web-grading
+credentials-file: /etc/cloudflared/dev1-web-grading.json
+ingress:
+  # Jenkins (Docker container - direct)
+  - hostname: dev1-jenkins.vucongtuanduong.dpdns.org
+    service: http://localhost:9999
+
+  # K8s services via Traefik NodePort (stable, không đổi khi đổi WiFi)
+  - hostname: dev1-api.vucongtuanduong.dpdns.org
+    service: http://localhost:31242
+
+  - hostname: dev1-executor.vucongtuanduong.dpdns.org
+    service: http://localhost:31242
+
+  - hostname: dev1-argocd.vucongtuanduong.dpdns.org
+    service: http://localhost:31242
+
+  # Future services: thêm rule ở đây
+  # - hostname: dev1-xxx.vucongtuanduong.dpdns.org
+  #   service: http://localhost:31242
+
+  # Catch-all: return 404
+  - service: http_status:404

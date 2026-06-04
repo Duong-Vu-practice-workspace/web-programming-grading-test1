@@ -1,0 +1,27 @@
+{{- $domain := .Values.global.domain }}
+{{- $prefix := .Values.global.prefix }}
+
+{{- range .Values.services }}
+{{- $hostname := printf "%s-%s.%s" $prefix .name $domain }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "web-grading.fullname" $ }}-{{ .name }}
+  labels:
+    app: {{ include "web-grading.name" $ }}-{{ .name }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  rules:
+    - host: {{ $hostname }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "web-grading.fullname" $ }}-{{ .name }}
+                port:
+                  number: {{ .service.port }}
+---
+{{- end }}

@@ -1,0 +1,17 @@
+FROM eclipse-temurin:21-jdk-alpine AS builder
+WORKDIR /build
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
+COPY web_programming_grading_core/pom.xml web_programming_grading_core/
+COPY web_programming_grading_api/pom.xml web_programming_grading_api/
+COPY web_programming_grading_executor/pom.xml web_programming_grading_executor/
+RUN --mount=type=cache,target=/root/.m2 ./mvnw dependency:go-offline -pl web_programming_grading_executor -am -B
+COPY . .
+RUN --mount=type=cache,target=/root/.m2 ./mvnw clean package -pl web_programming_grading_executor -am -DskipTests -B
+
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+COPY --from=builder /build/web_programming_grading_executor/target/*.jar app.jar
+EXPOSE 8081
+ENTRYPOINT ["java", "-jar", "app.jar"]

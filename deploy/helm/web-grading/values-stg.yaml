@@ -1,0 +1,42 @@
+global:
+  domain: vucongtuanduong.dpdns.org
+  prefix: dev1
+
+image:
+  registry: docker.io
+  tag: v1.0
+  pullPolicy: Always
+
+spring:
+  profilesActive: stg
+
+services:
+  - name: api
+    replicaCount: 1
+    image:
+      repository: vucongtuanduong/web-grading-api
+    service:
+      type: ClusterIP
+      port: 8080
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 200m
+        memory: 256Mi
+
+  - name: executor
+    replicaCount: 1
+    image:
+      repository: vucongtuanduong/web-grading-executor
+    service:
+      type: ClusterIP
+      port: 8081
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 200m
+        memory: 256Mi

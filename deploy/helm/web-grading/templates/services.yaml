@@ -1,0 +1,18 @@
+{{- range .Values.services }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "web-grading.fullname" $ }}-{{ .name }}
+  labels:
+    app: {{ include "web-grading.name" $ }}-{{ .name }}
+spec:
+  type: {{ .service.type }}
+  ports:
+    - port: {{ .service.port }}
+      targetPort: {{ .service.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ include "web-grading.name" $ }}-{{ .name }}
+{{- end }}
