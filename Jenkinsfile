@@ -76,6 +76,8 @@ pipeline {
                         git clone ${appConfigRepo} --branch ${appConfigBranch} \${CONFIG_REPO}
                         cd \${CONFIG_REPO}
                         sed -i 's|tag: .*|tag: "${version}"|' ${helmValueFile}
+                        git config user.email "jenkins@web-grading.com"
+                        git config user.name "Jenkins CI"
                         git add .
                         git commit -m "Update images to version ${version}"
                         git push https://\${GIT_USERNAME}:\${GIT_PASSWORD}@github.com/Duong-Vu-practice-workspace/web-programming-grading-config-test1.git
