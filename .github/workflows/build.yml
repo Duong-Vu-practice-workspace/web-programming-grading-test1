@@ -94,22 +94,39 @@ jobs:
 
       - name: Trigger Kaggle Notebook
         env:
-          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+          KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_KEY }}
         run: |
-          # 1. Securely initialize the access token file
-          mkdir -p ~/.kaggle
-          echo "$KAGGLE_KEY" > ~/.kaggle/access_token
-          chmod 600 ~/.kaggle/access_token
-
-          # 2. Install Kaggle tool
           pip install -q kaggle
 
-          # 3. Pull the notebook and its original metadata
+          # 1. Đoạn script Python để tự động dừng (Cancel) notebook nếu nó đang chạy
+          python3 -c "
+          import kaggle
+          from kaggle.api.kaggle_api_extended import KaggleApi
+          import sys
+
+          api = KaggleApi()
+          api.authenticate()
+
+          slug = 'duongvucongtuan/duong-test-kaggle-java-hosting1'
+          try:
+              # Kiểm tra trạng thái hiện tại của Notebook
+              status = api.kernel_status(slug)
+              current_status = status.get('status', '').lower()
+              print(f'Trạng thái hiện tại của notebook: {current_status}')
+
+              # Nếu đang chạy ngầm hoặc đang xếp hàng đợi, thực hiện hủy bỏ
+              if current_status in ['running', 'queued']:
+                  print('Phát hiện notebook cũ đang chạy. Đang tiến hành hủy tác vụ...')
+                  api.kernel_cancel(slug)
+                  print('Đã gửi yêu cầu hủy thành công.')
+          except Exception as e:
+              print(f'Không thể kiểm tra hoặc dừng notebook (Có thể do chưa từng chạy): {e}')
+          "
+
+          # 2. Đợi 5 giây để hệ thống Kaggle cập nhật trạng thái hủy hoàn toàn
+          sleep 5
+
+          # 3. Tải metadata hiện tại và đẩy phiên bản mới lên chạy
           mkdir -p /tmp/kernel
           kaggle kernels pull duongvucongtuan/duong-test-kaggle-java-hosting1 -p /tmp/kernel -m
-
-          # 4. Give the API a brief pause to sync
-          sleep 3
-
-          # 5. Push the notebook to execute it
           kaggle kernels push -p /tmp/kernel
