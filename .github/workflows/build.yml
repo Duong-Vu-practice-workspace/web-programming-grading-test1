@@ -92,42 +92,42 @@ jobs:
           git commit -m "Update images to version ${{ env.VERSION }}"
           git push
 
-      - name: Trigger Kaggle Notebook
-        env:
-          KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_KEY }}
-        run: |
-          pip install -q kaggle
+      # - name: Trigger Kaggle Notebook
+      #   env:
+      #     KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_KEY }}
+      #   run: |
+      #     pip install -q kaggle
 
-          # 1. Đoạn script Python tự động dừng (Cancel) notebook cũ nếu đang chạy
-          python3 -c "
-          import kaggle
-          from kaggle.api.kaggle_api_extended import KaggleApi
+      #     # 1. Đoạn script Python tự động dừng (Cancel) notebook cũ nếu đang chạy
+      #     python3 -c "
+      #     import kaggle
+      #     from kaggle.api.kaggle_api_extended import KaggleApi
 
-          api = KaggleApi()
-          api.authenticate()
+      #     api = KaggleApi()
+      #     api.authenticate()
 
-          slug = 'duongvucongtuan/duong-test-kaggle-java-hosting1'
-          try:
-              # Lấy trạng thái hiện tại (Lưu ý: kernels_status có chữ 's')
-              status = api.kernels_status(slug)
-              current_status = status.get('status', '').lower()
-              print(f'Trạng thái hiện tại của notebook: {current_status}')
+      #     slug = 'duongvucongtuan/duong-test-kaggle-java-hosting1'
+      #     try:
+      #         # Lấy trạng thái hiện tại (Lưu ý: kernels_status có chữ 's')
+      #         status = api.kernels_status(slug)
+      #         current_status = status.get('status', '').lower()
+      #         print(f'Trạng thái hiện tại của notebook: {current_status}')
 
-              # Nếu notebook đang chạy ngầm hoặc đang trong hàng đợi xếp hàng
-              if current_status in ['running', 'queued', 'running_all']:
-                  print('Phát hiện phiên bản cũ đang chạy. Tiến hành hủy...')
-                  api.kernels_cancel(slug)
-                  print('Đã gửi yêu cầu hủy thành công.')
-              else:
-                  print('Không có phiên bản nào đang chạy. Sẵn sàng push mới.')
-          except Exception as e:
-              print(f'Bỏ qua bước kiểm tra hủy (Notebook có thể trống hoặc chưa chạy): {e}')
-          "
+      #         # Nếu notebook đang chạy ngầm hoặc đang trong hàng đợi xếp hàng
+      #         if current_status in ['running', 'queued', 'running_all']:
+      #             print('Phát hiện phiên bản cũ đang chạy. Tiến hành hủy...')
+      #             api.kernels_cancel(slug)
+      #             print('Đã gửi yêu cầu hủy thành công.')
+      #         else:
+      #             print('Không có phiên bản nào đang chạy. Sẵn sàng push mới.')
+      #     except Exception as e:
+      #         print(f'Bỏ qua bước kiểm tra hủy (Notebook có thể trống hoặc chưa chạy): {e}')
+      #     "
 
-          # 2. Nghỉ 5 giây để máy chủ Kaggle đồng bộ trạng thái hủy
-          sleep 5
+      #     # 2. Nghỉ 5 giây để máy chủ Kaggle đồng bộ trạng thái hủy
+      #     sleep 5
 
-          # 3. Tiến hành tải metadata và ghi đè (Push) phiên bản mới lên
-          mkdir -p /tmp/kernel
-          kaggle kernels pull duongvucongtuan/duong-test-kaggle-java-hosting1 -p /tmp/kernel -m
-          kaggle kernels push -p /tmp/kernel
+      #     # 3. Tiến hành tải metadata và ghi đè (Push) phiên bản mới lên
+      #     mkdir -p /tmp/kernel
+      #     kaggle kernels pull duongvucongtuan/duong-test-kaggle-java-hosting1 -p /tmp/kernel -m
+      #     kaggle kernels push -p /tmp/kernel
