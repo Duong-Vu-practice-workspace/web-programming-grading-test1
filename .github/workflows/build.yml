@@ -91,3 +91,17 @@ jobs:
           git add .
           git commit -m "Update images to version ${{ env.VERSION }}"
           git push
+
+      - name: Trigger Kaggle Notebook
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: |
+          mkdir -p ~/.kaggle
+          echo "{\"username\":\"${KAGGLE_USERNAME}\",\"key\":\"${KAGGLE_KEY}\"}" > ~/.kaggle/kaggle.json
+          chmod 600 ~/.kaggle/kaggle.json
+          pip install -q kaggle
+          kaggle kernels pull duongvucongtuan/duong-test-kaggle-java-hosting1 -p /tmp/kernel -m
+          kaggle kernels cancel duongvucongtuan/duong-test-kaggle-java-hosting1 2>/dev/null || true
+          sleep 3
+          kaggle kernels push -p /tmp/kernel
