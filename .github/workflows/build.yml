@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -29,13 +32,6 @@ jobs:
       - name: Run tests
         run: ./mvnw test
 
-      - name: List JARs
-        id: jars
-        run: |
-          echo "api=$(ls web_programming_grading_api/target/*.jar | head -1)" >> $GITHUB_OUTPUT
-          echo "executor=$(ls web_programming_grading_executor/target/*.jar | head -1)" >> $GITHUB_OUTPUT
-          echo "core=$(ls web_programming_grading_core/target/*.jar | head -1)" >> $GITHUB_OUTPUT
-
       - name: Generate release tag
         id: tag
         run: |
@@ -49,9 +45,7 @@ jobs:
           body: |
             Auto-release from commit ${{ github.sha }}
           files: |
-            ${{ steps.jars.outputs.api }}
-            ${{ steps.jars.outputs.executor }}
-            ${{ steps.jars.outputs.core }}
+            backend/web_programming_grading/web_programming_grading_api/target/*.jar
+            backend/web_programming_grading/web_programming_grading_executor/target/*.jar
+            backend/web_programming_grading/web_programming_grading_core/target/*.jar
           fail_on_unmatched_files: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
