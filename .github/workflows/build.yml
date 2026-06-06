@@ -1,0 +1,57 @@
+name: Build & Release JAR
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend/web_programming_grading
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: temurin
+          cache: maven
+
+      - name: Build with Maven
+        run: ./mvnw clean package -DskipTests
+
+      - name: Run tests
+        run: ./mvnw test
+
+      - name: List JARs
+        id: jars
+        run: |
+          echo "api=$(ls web_programming_grading_api/target/*.jar | head -1)" >> $GITHUB_OUTPUT
+          echo "executor=$(ls web_programming_grading_executor/target/*.jar | head -1)" >> $GITHUB_OUTPUT
+          echo "core=$(ls web_programming_grading_core/target/*.jar | head -1)" >> $GITHUB_OUTPUT
+
+      - name: Generate release tag
+        id: tag
+        run: |
+          echo "tag=v$(date +%Y%m%d)-${{ github.run_number }}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: Release ${{ steps.tag.outputs.tag }}
+          body: |
+            Auto-release from commit ${{ github.sha }}
+          files: |
+            ${{ steps.jars.outputs.api }}
+            ${{ steps.jars.outputs.executor }}
+            ${{ steps.jars.outputs.core }}
+          fail_on_unmatched_files: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
