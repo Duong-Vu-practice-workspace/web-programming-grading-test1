@@ -94,15 +94,12 @@ jobs:
 
       - name: Trigger Kaggle Notebook
         env:
-          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
           KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
         run: |
-          # 1. Securely initialize kaggle credentials using a heredoc
+          # 1. Securely initialize the access token file
           mkdir -p ~/.kaggle
-          cat << EOF > ~/.kaggle/kaggle.json
-          {"username":"$KAGGLE_USERNAME","key":"$KAGGLE_KEY"}
-          EOF
-          chmod 600 ~/.kaggle/kaggle.json
+          echo "$KAGGLE_KEY" > ~/.kaggle/access_token
+          chmod 600 ~/.kaggle/access_token
 
           # 2. Install Kaggle tool
           pip install -q kaggle
@@ -114,5 +111,5 @@ jobs:
           # 4. Give the API a brief pause to sync
           sleep 3
 
-          # 5. Push the notebook (This automatically overwrites and restarts the notebook run)
+          # 5. Push the notebook to execute it
           kaggle kernels push -p /tmp/kernel
